@@ -16,7 +16,6 @@
 		"data:setup": "node scripts/build-board.mjs && node scripts/convert-icons.mjs"
 	},
 	"dependencies": {
-		"@nuxt/eslint": "1.16.0",
 		"@nuxt/image": "2.0.0",
 		"@nuxt/ui": "4.9.0",
 		"@nuxtjs/i18n": "^10.4.0",
@@ -31,6 +30,7 @@
 	"devDependencies": {
 		"@antfu/eslint-config": "^9.1.0",
 		"@iconify-json/lucide": "^1.2.115",
+		"@nuxt/eslint": "1.16.0",
 		"@types/node": "^26.0.1",
 		"drizzle-kit": "^0.31.10",
 		"eslint": "^10.6.0",

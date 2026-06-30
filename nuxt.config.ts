@@ -7,8 +7,14 @@ export default defineNuxtConfig({
 		'@nuxt/image',
 		'@nuxt/ui',
 		'@nuxt/eslint',
-		'@nuxtjs/i18n'
+		'@nuxtjs/i18n',
 	],
+
+	eslint: {
+		config: {
+			standalone: false,
+		},
+	},
 
 	css: ['~/assets/css/main.css'],
 
@@ -17,9 +23,9 @@ export default defineNuxtConfig({
 		defaultLocale: 'en',
 		locales: [
 			{ code: 'en', name: 'English', file: 'en.json' },
-			{ code: 'ru', name: 'Русский', file: 'ru.json' }
+			{ code: 'ru', name: 'Русский', file: 'ru.json' },
 		],
-		detectBrowserLanguage: { useCookie: true, cookieKey: 'i18n_locale', redirectOn: 'root' }
+		detectBrowserLanguage: { useCookie: true, cookieKey: 'i18n_locale', redirectOn: 'root' },
 	},
 
 	// Server-only DB config. Point these at YOUR Metin2 game DB.
@@ -30,8 +36,8 @@ export default defineNuxtConfig({
 			port: 3306,
 			user: 'root',
 			password: '',
-			database: 'player'
-		}
+			database: 'player',
+		},
 	},
 
 	vite: {
@@ -39,7 +45,7 @@ export default defineNuxtConfig({
 			include: [
 				'@vue/devtools-core',
 				'@vue/devtools-kit',
-			]
-		}
-	}
+			],
+		},
+	},
 })

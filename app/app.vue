@@ -16,7 +16,9 @@ const langs = [{ code: 'en', label: 'EN' }, { code: 'ru', label: 'RU' }] as cons
 				{{ l.label }}
 			</button>
 		</div>
+
 		<NuxtRouteAnnouncer />
+
 		<NuxtPage />
 	</UApp>
 </template>

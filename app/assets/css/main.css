@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "@nuxt/ui";
+@import 'tailwindcss';
+@import '@nuxt/ui';
 
 /* In-game ItemToolTip = ui.ThinBoard (uitooltip.py): 16px corner/line textures (square, with
    corner ornaments) + solid black 51% fill. Sprite built by scripts/build-board.mjs. */
@@ -7,7 +7,7 @@
    shadow + rounded) AND a fixed h-6 + align-items:center. box-shadow:none kills the ring+shadow;
    height:auto is the important one — with the fixed 24px height the description overflowed a
    centered box and grew symmetrically up+down, crawling over the card. auto = grows down only. */
-[data-slot="content"]:has(> .m2-board) {
+[data-slot='content']:has(> .m2-board) {
 	background: transparent !important;
 	box-shadow: none !important;
 	border-radius: 0 !important;

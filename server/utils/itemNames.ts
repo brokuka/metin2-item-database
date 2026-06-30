@@ -11,17 +11,21 @@ export type Lang = 'en' | 'ru'
 const cache: Partial<Record<Lang, Map<number, string>>> = {}
 
 function load(lang: Lang): Map<number, string> {
-	if (cache[lang]) return cache[lang]!
+	if (cache[lang])
+		return cache[lang]!
 	const map = new Map<number, string>()
 	try {
 		const txt = iconv.decode(readFileSync(`${DIR}/item_names_${lang}.txt`), ENC[lang] ?? 'utf8')
 		for (const line of txt.split(/\r?\n/).slice(1)) {
 			const tab = line.indexOf('\t')
-			if (tab < 0) continue
+			if (tab < 0)
+				continue
 			const vnum = Number(line.slice(0, tab))
-			if (vnum) map.set(vnum, line.slice(tab + 1).trim())
+			if (vnum)
+				map.set(vnum, line.slice(tab + 1).trim())
 		}
-	} catch { /* fall back to caller-supplied name */ }
+	}
+	catch { /* fall back to caller-supplied name */ }
 	cache[lang] = map
 	return map
 }

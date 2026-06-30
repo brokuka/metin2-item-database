@@ -13,27 +13,37 @@ let nameToIcon: Map<string, string> | null = null
 let haveWebp: Set<string> | null = null
 
 function ensure() {
-	if (vnumToIcon) return
+	if (vnumToIcon)
+		return
 	vnumToIcon = new Map()
 	nameToIcon = new Map()
 	haveWebp = new Set()
 	try {
-		for (const f of readdirSync(ICON_DIR)) if (f.endsWith('.webp')) haveWebp.add(f.slice(0, -5))
-	} catch { /* ignore */ }
+		for (const f of readdirSync(ICON_DIR)) {
+			if (f.endsWith('.webp'))
+				haveWebp.add(f.slice(0, -5))
+		}
+	}
+	catch { /* ignore */ }
 	try {
 		for (const line of readFileSync(LIST, 'utf8').split(/\r?\n/)) { // no header row
 			const c = line.split('\t')
-			if (c.length < 3) continue
+			if (c.length < 3)
+				continue
 			const vnum = Number(c[0])
 			const base = c[2].split('/').pop()?.replace(/\.[a-z]+$/i, '').toLowerCase()
-			if (vnum && base) vnumToIcon.set(vnum, base)
+			if (vnum && base)
+				vnumToIcon.set(vnum, base)
 		}
-	} catch { /* ignore */ }
+	}
+	catch { /* ignore */ }
 	// name -> icon (first/lowest vnum with a real icon wins)
 	for (const [vnum, base] of vnumToIcon) {
-		if (!haveWebp.has(base)) continue
+		if (!haveWebp.has(base))
+			continue
 		const name = itemName(vnum, 'en', '').toLowerCase()
-		if (name && !nameToIcon.has(name)) nameToIcon.set(name, base)
+		if (name && !nameToIcon.has(name))
+			nameToIcon.set(name, base)
 	}
 }
 
@@ -41,14 +51,17 @@ function ensure() {
 export function resolveItemIcon(vnum: number, enName = ''): string | null {
 	ensure()
 	const direct = vnumToIcon!.get(vnum)
-	if (direct && haveWebp!.has(direct)) return direct
+	if (direct && haveWebp!.has(direct))
+		return direct
 	const byName = enName && nameToIcon!.get(enName.toLowerCase())
-	if (byName && haveWebp!.has(byName)) return byName
+	if (byName && haveWebp!.has(byName))
+		return byName
 	// Fallback: many items (accessories etc.) are absent from item_list.txt but their
 	// icon is named by vnum (or the +0 base of the refine family). The game reads these
 	// from item_proto, not item_list. ponytail: vnum-name heuristic, fine since haveWebp guards it.
 	const self = String(vnum)
-	if (haveWebp!.has(self)) return self
+	if (haveWebp!.has(self))
+		return self
 	const base = String(Math.floor(vnum / 10) * 10)
 	return haveWebp!.has(base) ? base : null
 }

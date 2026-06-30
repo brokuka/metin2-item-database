@@ -9,17 +9,17 @@ No accounts, no registration — it's a read-only item database.
 
 > Every server runs different item protos, names and icons, so this ships as the
 > **system** only: you point it at your client + server files and the included scripts
-> generate the icons/frame from *your* data.
+> generate the icons/frame from _your_ data.
 
 ## How it gets data
 
-| Data | Source | Used at |
-|------|--------|---------|
-| Item protos (stats, applies, values) | live `player.item_proto` table in your DB | runtime |
-| Names (EN/RU) | `<M2_NAMES_DIR>/item_names_<lang>.txt` (server conf) | runtime |
-| Descriptions (EN/RU) | `<M2_PACK_DIR>/locale_<lang>/locale/<lang>/itemdesc.txt` (client) | runtime |
-| Icons | `*.tga` under `<M2_PACK_DIR>` → converted to `webp` | `data:icons` script |
-| Tooltip frame | `<M2_PACK_DIR>/ETC/ymir work/ui/pattern/thinboard_*` | `data:board` script |
+| Data                                 | Source                                                            | Used at             |
+| ------------------------------------ | ----------------------------------------------------------------- | ------------------- |
+| Item protos (stats, applies, values) | live `player.item_proto` table in your DB                         | runtime             |
+| Names (EN/RU)                        | `<M2_NAMES_DIR>/item_names_<lang>.txt` (server conf)              | runtime             |
+| Descriptions (EN/RU)                 | `<M2_PACK_DIR>/locale_<lang>/locale/<lang>/itemdesc.txt` (client) | runtime             |
+| Icons                                | `*.tga` under `<M2_PACK_DIR>` → converted to `webp`               | `data:icons` script |
+| Tooltip frame                        | `<M2_PACK_DIR>/ETC/ymir work/ui/pattern/thinboard_*`              | `data:board` script |
 
 ## Requirements
 

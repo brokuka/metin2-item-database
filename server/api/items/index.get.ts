@@ -1,19 +1,22 @@
 import { itemProto } from '~~/server/db/schema'
-import { itemTypeLabel, REFINE_TYPES, parseRefine } from '~~/server/utils/items'
 import { resolveItemIcon } from '~~/server/utils/icons'
-import { itemName, langOf } from '~~/server/utils/itemNames'
 import { itemDesc } from '~~/server/utils/itemDesc'
+import { itemName, langOf } from '~~/server/utils/itemNames'
+import { itemTypeLabel, parseRefine, REFINE_TYPES } from '~~/server/utils/items'
 
 // Fetch all item rows once, cached — avoids hitting the DB on every search/filter/page request.
 const getAllRows = defineCachedFunction(
 	async () => {
 		const db = useDb()
 		return db.select({
-			vnum: itemProto.vnum, type: itemProto.type, localeName: itemProto.localeName,
-			limittype0: itemProto.limittype0, limitvalue0: itemProto.limitvalue0
+			vnum: itemProto.vnum,
+			type: itemProto.type,
+			localeName: itemProto.localeName,
+			limittype0: itemProto.limittype0,
+			limitvalue0: itemProto.limitvalue0,
 		}).from(itemProto).orderBy(itemProto.vnum)
 	},
-	{ maxAge: 60, name: 'itemProtoRows', getKey: () => 'all' }
+	{ maxAge: 60, name: 'itemProtoRows', getKey: () => 'all' },
 )
 
 export default defineEventHandler(async (event) => {
@@ -42,16 +45,24 @@ export default defineEventHandler(async (event) => {
 		if (refine) {
 			const key = `${r.type}:${refine.base.toLowerCase()}`
 			const g = groups.get(key)
-			if (!g) groups.set(key, { vnum: r.vnum, name: refine.base, type: r.type, maxLevel: refine.level, levels: 1, level: r.level })
-			else { g.maxLevel = Math.max(g.maxLevel, refine.level); g.levels++ }
-		} else {
+			if (!g) {
+				groups.set(key, { vnum: r.vnum, name: refine.base, type: r.type, maxLevel: refine.level, levels: 1, level: r.level })
+			}
+			else {
+				g.maxLevel = Math.max(g.maxLevel, refine.level)
+				g.levels++
+			}
+		}
+		else {
 			groups.set(`v:${r.vnum}`, { vnum: r.vnum, name: r.name, type: r.type, maxLevel: 0, levels: 1, level: r.level })
 		}
 	}
 
 	const all = [...groups.values()]
-	if (sort === 'name') all.sort((a, b) => a.name.localeCompare(b.name) * dir)
-	else if (sort === 'level') all.sort((a, b) => (a.level - b.level || a.vnum - b.vnum) * dir)
+	if (sort === 'name')
+		all.sort((a, b) => a.name.localeCompare(b.name) * dir)
+	else if (sort === 'level')
+		all.sort((a, b) => (a.level - b.level || a.vnum - b.vnum) * dir)
 	else all.sort((a, b) => (a.vnum - b.vnum) * dir) // 'id'
 	const items = all.slice((page - 1) * limit, page * limit).map(g => ({
 		vnum: g.vnum,
@@ -60,7 +71,7 @@ export default defineEventHandler(async (event) => {
 		typeLabel: itemTypeLabel(g.type, lang),
 		icon: resolveItemIcon(g.vnum, itemName(g.vnum, 'en', '')),
 		refine: g.levels > 1 ? g.maxLevel : 0,
-		desc: itemDesc(g.vnum, lang)
+		desc: itemDesc(g.vnum, lang),
 	}))
 
 	return { total: all.length, page, limit, items }

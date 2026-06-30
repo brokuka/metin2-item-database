@@ -1,9 +1,9 @@
-import { mysqlSchema, customType, int, tinyint } from 'drizzle-orm/mysql-core'
+import { customType, int, mysqlSchema, tinyint } from 'drizzle-orm/mysql-core'
 
 // item_proto names are varbinary (EUC-KR `name`, English `locale_name`). Decode Buffer -> string on read.
 const binStr = customType<{ data: string }>({
 	dataType() { return 'varbinary(24)' },
-	fromDriver(v) { return Buffer.isBuffer(v) ? v.toString('utf8') : String(v ?? '') }
+	fromDriver(v) { return Buffer.isBuffer(v) ? v.toString('utf8') : String(v ?? '') },
 })
 
 // Item definitions live in the `player` DB (owned by the server). Read-only wiki source.
@@ -35,5 +35,5 @@ export const itemProto = player.table('item_proto', {
 	value4: int('value4'),
 	value5: int('value5'),
 	wearflag: int('wearflag'),
-	antiflag: int('antiflag')
+	antiflag: int('antiflag'),
 })
