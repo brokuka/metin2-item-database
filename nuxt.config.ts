@@ -35,6 +35,10 @@ export default defineNuxtConfig({
 	// Server-only DB config. Point these at YOUR Metin2 game DB.
 	// Override via env: NUXT_DB_HOST, NUXT_DB_PORT, NUXT_DB_USER, NUXT_DB_PASSWORD, NUXT_DB_DATABASE.
 	runtimeConfig: {
+		// Absolute path to this layer's converted item icons. Resolved here (config runs
+		// in Node with a correct import.meta.url) because a cwd/bundle-relative path can't
+		// find the layer's public/ once this is consumed as a layer. Override: NUXT_ICON_DIR.
+		iconDir: fileURLToPath(new URL('./public/icons/items', import.meta.url)),
 		db: {
 			host: '127.0.0.1',
 			port: 3306,

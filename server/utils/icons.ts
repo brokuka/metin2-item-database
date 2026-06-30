@@ -6,7 +6,8 @@ import { itemName } from './itemNames'
 // icon of the same-named item. Cross-checked against the converted .webp set.
 const PACK = process.env.M2_PACK_DIR || '../client/bin/pack'
 const LIST = process.env.M2_ITEM_LIST || `${PACK}/locale_en/locale/en/item_list.txt`
-const ICON_DIR = './public/icons/items'
+// ICON_DIR comes from runtimeConfig (absolute, resolved in the layer's nuxt.config) — a
+// cwd/import.meta.url path can't point at the layer's public/ once bundled under the shell.
 
 let vnumToIcon: Map<number, string> | null = null
 let nameToIcon: Map<string, string> | null = null
@@ -18,6 +19,7 @@ function ensure() {
 	vnumToIcon = new Map()
 	nameToIcon = new Map()
 	haveWebp = new Set()
+	const ICON_DIR = useRuntimeConfig().iconDir as string
 	try {
 		for (const f of readdirSync(ICON_DIR)) {
 			if (f.endsWith('.webp'))
