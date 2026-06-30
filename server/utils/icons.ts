@@ -43,5 +43,12 @@ export function resolveItemIcon(vnum: number, enName = ''): string | null {
 	const direct = vnumToIcon!.get(vnum)
 	if (direct && haveWebp!.has(direct)) return direct
 	const byName = enName && nameToIcon!.get(enName.toLowerCase())
-	return byName && haveWebp!.has(byName) ? byName : null
+	if (byName && haveWebp!.has(byName)) return byName
+	// Fallback: many items (accessories etc.) are absent from item_list.txt but their
+	// icon is named by vnum (or the +0 base of the refine family). The game reads these
+	// from item_proto, not item_list. ponytail: vnum-name heuristic, fine since haveWebp guards it.
+	const self = String(vnum)
+	if (haveWebp!.has(self)) return self
+	const base = String(Math.floor(vnum / 10) * 10)
+	return haveWebp!.has(base) ? base : null
 }
