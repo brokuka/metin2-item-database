@@ -18,8 +18,12 @@
 .m2-board {
 	border: 16px solid transparent;
 	border-image: url('/ui/board.webp?v=3') 16 / 16px / 0 round;
-	background: rgba(0, 0, 0, 0.49);
-	background-clip: padding-box;
+	background: #0a0a0a;
+	background-clip: border-box;
+}
+
+.dark .m2-board {
+	background: rgba(0, 0, 0, 0.88);
 	padding: 6px 12px 10px;
 	text-align: center;
 }
