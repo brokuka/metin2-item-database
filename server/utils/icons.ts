@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync } from 'node:fs'
-import { itemName } from '~~/server/utils/itemNames'
+import { itemName } from './itemNames'
 
 // Authoritative vnum -> icon basename from the client's item_list.txt (cols: vnum, type, iconPath, model).
 // Plus a name -> icon fallback so duplicate items (e.g. 9xxxx clones not in item_list) reuse the

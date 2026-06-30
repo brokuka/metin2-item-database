@@ -1,4 +1,4 @@
-import type { Lang } from '~~/server/utils/itemNames'
+import type { Lang } from './itemNames'
 
 // Maps from game source: client/bin/pack/root/uitooltip.py (formulas, percent rules),
 // client/src/GameLib/ItemData.h (EItemType), server/src/common/length.h (EApplyTypes).

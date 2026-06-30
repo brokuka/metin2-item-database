@@ -1,9 +1,9 @@
 import { and, between, eq } from 'drizzle-orm'
-import { itemProto } from '~~/server/db/schema'
-import { resolveItemIcon } from '~~/server/utils/icons'
-import { itemDesc } from '~~/server/utils/itemDesc'
-import { itemName, langOf } from '~~/server/utils/itemNames'
-import { appliesIndexed, decodeRestrictions, decodeStats, describeLimits, itemTypeLabel, parseRefine, REFINE_TYPES } from '~~/server/utils/items'
+import { itemProto } from '../../db/schema'
+import { resolveItemIcon } from '../../utils/icons'
+import { itemDesc } from '../../utils/itemDesc'
+import { itemName, langOf } from '../../utils/itemNames'
+import { appliesIndexed, decodeRestrictions, decodeStats, describeLimits, itemTypeLabel, parseRefine, REFINE_TYPES } from '../../utils/items'
 
 type Row = typeof itemProto.$inferSelect
 

@@ -1,4 +1,4 @@
-import type { Lang } from '~~/server/utils/itemNames'
+import type { Lang } from './itemNames'
 import { readFileSync } from 'node:fs'
 import iconv from 'iconv-lite'
 

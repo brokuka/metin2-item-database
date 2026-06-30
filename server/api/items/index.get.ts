@@ -1,8 +1,8 @@
-import { itemProto } from '~~/server/db/schema'
-import { resolveItemIcon } from '~~/server/utils/icons'
-import { itemDesc } from '~~/server/utils/itemDesc'
-import { itemName, langOf } from '~~/server/utils/itemNames'
-import { itemTypeLabel, parseRefine, REFINE_TYPES } from '~~/server/utils/items'
+import { itemProto } from '../../db/schema'
+import { resolveItemIcon } from '../../utils/icons'
+import { itemDesc } from '../../utils/itemDesc'
+import { itemName, langOf } from '../../utils/itemNames'
+import { itemTypeLabel, parseRefine, REFINE_TYPES } from '../../utils/items'
 
 // Fetch all item rows once, cached — avoids hitting the DB on every search/filter/page request.
 const getAllRows = defineCachedFunction(

@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
 	compatibilityDate: '2025-07-15',
@@ -16,7 +18,9 @@ export default defineNuxtConfig({
 		},
 	},
 
-	css: ['~/assets/css/main.css'],
+	// Resolve relative to THIS layer (not the consuming app's srcDir), so it works
+	// both standalone and when extended as a layer (git submodule).
+	css: [fileURLToPath(new URL('./app/assets/css/main.css', import.meta.url))],
 
 	i18n: {
 		strategy: 'no_prefix',
