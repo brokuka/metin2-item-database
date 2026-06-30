@@ -1,0 +1,36 @@
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Node dependencies
+node_modules
+
+# Lockfiles — PM-agnostic: each user installs with their own tool (bun/npm/pnpm/yarn)
+bun.lock
+bun.lockb
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Logs
+logs
+*.log
+
+# Misc
+.DS_Store
+.fleet
+.idea
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+# Generated game assets — produced from YOUR client via `bun data:setup`.
+# Not committed: they're derived from proprietary client files.
+/public/icons/
+/public/ui/board.webp

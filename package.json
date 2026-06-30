@@ -1,0 +1,42 @@
+{
+	"name": "metin2-item-database",
+	"type": "module",
+	"private": true,
+	"packageManager": "bun@1.3.14",
+	"scripts": {
+		"dev": "nuxt dev",
+		"build": "nuxt build",
+		"generate": "nuxt generate",
+		"preview": "nuxt preview",
+		"postinstall": "nuxt prepare",
+		"lint": "eslint",
+		"lint:fix": "eslint --fix",
+		"data:icons": "node scripts/convert-icons.mjs",
+		"data:board": "node scripts/build-board.mjs",
+		"data:setup": "node scripts/build-board.mjs && node scripts/convert-icons.mjs"
+	},
+	"dependencies": {
+		"@nuxt/eslint": "1.16.0",
+		"@nuxt/image": "2.0.0",
+		"@nuxt/ui": "4.9.0",
+		"@nuxtjs/i18n": "^10.4.0",
+		"drizzle-orm": "^0.45.2",
+		"iconv-lite": "^0.7.2",
+		"mysql2": "^3.11.0",
+		"nuxt": "^4.4.8",
+		"tailwindcss": "^4.0.0",
+		"vue": "^3.5.38",
+		"vue-router": "^5.1.0"
+	},
+	"devDependencies": {
+		"@antfu/eslint-config": "^9.1.0",
+		"@iconify-json/lucide": "^1.2.115",
+		"@types/node": "^26.0.1",
+		"drizzle-kit": "^0.31.10",
+		"eslint": "^10.6.0",
+		"eslint-plugin-format": "^2.0.1",
+		"sharp": "^0.35.2",
+		"tga": "^1.0.7",
+		"typescript": "^6.0.3"
+	}
+}

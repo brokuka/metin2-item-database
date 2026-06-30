@@ -1,0 +1,82 @@
+{
+	"common": {
+		"home": "Home",
+		"siteSubtitle": "Private server",
+		"itemDatabase": "Item database"
+	},
+	"auth": {
+		"loggedInAs": "Logged in as",
+		"useInClient": "Use this login & password in the game client.",
+		"logout": "Log out",
+		"signIn": "Sign in",
+		"register": "Register",
+		"welcomeBack": "Welcome back",
+		"signInDesc": "Sign in to your Metin2 account.",
+		"createAccount": "Create account",
+		"registerDesc": "Register to play on this Metin2 server.",
+		"login": "Login",
+		"email": "Email",
+		"password": "Password",
+		"noAccount": "No account?",
+		"alreadyRegistered": "Already registered?",
+		"loginFailed": "Login failed",
+		"registrationFailed": "Registration failed",
+		"accountCreated": "Account created",
+		"canLogIn": "You can now log into the game."
+	},
+	"items": {
+		"title": "Item database",
+		"liveCount": "Live from the server — {count} items",
+		"search": "Search by name or ID…",
+		"allCategories": "All categories",
+		"none": "No items found.",
+		"backToItems": "Back to items",
+		"requirements": "Requirements",
+		"bonuses": "Bonuses",
+		"stats": "Characteristics",
+		"weight": "Weight",
+		"sellPrice": "Sell price",
+		"copy": "Copy",
+		"copied": "Copied",
+		"refineLevel": "Refine level",
+		"description": "Description",
+		"noDescription": "No description",
+		"yang": "Yang",
+		"forClass": "Class",
+		"forGender": "Gender",
+		"allClasses": "All classes"
+	},
+	"sort": {
+		"id": "By ID",
+		"name": "By name",
+		"level": "By level"
+	},
+	"class": {
+		"warrior": "Warrior",
+		"assassin": "Ninja",
+		"sura": "Sura",
+		"shaman": "Shaman"
+	},
+	"gender": {
+		"male": "Male",
+		"female": "Female",
+		"both": "Any",
+		"none": "None"
+	},
+	"category": {
+		"1": "Weapon",
+		"2": "Armor",
+		"3": "Consumable",
+		"5": "Material",
+		"6": "Special",
+		"9": "Currency",
+		"10": "Metin Stone",
+		"17": "Skill Book",
+		"18": "Quest",
+		"23": "Gift Box",
+		"28": "Costume",
+		"29": "Dragon Soul",
+		"33": "Ring",
+		"34": "Belt"
+	}
+}
