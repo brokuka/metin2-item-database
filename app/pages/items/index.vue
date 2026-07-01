@@ -1,11 +1,40 @@
 <script setup lang="ts">
 const { t, locale } = useI18n()
+// Standalone wiki -> home; shell overrides wikiHome to its /wiki hub.
+const wikiHome = useAppConfig().wikiHome || '/'
+
+useHead({ title: () => (locale.value === 'ru' ? 'Предметы' : 'Items') })
 
 const CATS = [1, 2, 3, 5, 6, 9, 10, 17, 18, 23, 28, 29, 33, 34]
-const categories = computed(() => [
-	{ label: t('items.allCategories'), value: 'all' },
-	...CATS.map(v => ({ label: t(`category.${v}`), value: v })),
-])
+
+// A valid lucide icon per category (loosely themed; the set only needs to be valid).
+const CAT_ICON: Record<string, string> = {
+	all: 'i-lucide-layout-grid',
+	1: 'i-lucide-sword',
+	2: 'i-lucide-shield',
+	3: 'i-lucide-flask-conical',
+	5: 'i-lucide-boxes',
+	6: 'i-lucide-sparkles',
+	9: 'i-lucide-coins',
+	10: 'i-lucide-diamond',
+	17: 'i-lucide-book-marked',
+	18: 'i-lucide-scroll-text',
+	23: 'i-lucide-gift',
+	28: 'i-lucide-shirt',
+	29: 'i-lucide-flame',
+	33: 'i-lucide-gem',
+	34: 'i-lucide-square-dashed',
+}
+
+const catCards = computed(() => {
+	// Hide categories with no items on this server (e.g. Rings when the DB has no type-33).
+	const present: number[] = data.value?.types ?? []
+	return [
+		{ value: 'all' as number | 'all', label: t('items.allCategories'), icon: CAT_ICON.all },
+		...CATS.filter(v => !present.length || present.includes(v))
+			.map(v => ({ value: v as number | 'all', label: t(`category.${v}`), icon: CAT_ICON[v] })),
+	]
+})
 
 // State is initialised from the URL query and synced back to it, so search/filters survive
 // reloads, back/forward and are shareable.
@@ -14,9 +43,22 @@ const router = useRouter()
 
 const q = ref(String(route.query.q ?? ''))
 const type = ref<number | 'all'>(route.query.type ? Number(route.query.type) : 'all')
+const cls = ref(String(route.query.class ?? 'all')) // character class the item is usable by
+const gender = ref(String(route.query.gender ?? 'all'))
 const sort = ref(String(route.query.sort ?? 'id'))
 const dir = ref<'asc' | 'desc'>(route.query.dir === 'desc' ? 'desc' : 'asc')
 const page = ref(Number(route.query.page) || 1)
+
+const classOptions = computed(() => [
+	{ label: locale.value === 'ru' ? 'Все классы' : 'All classes', value: 'all' },
+	...(['warrior', 'assassin', 'sura', 'shaman'] as const).map(c => ({ label: t(`class.${c}`), value: c })),
+])
+
+// Smoothly scroll to the top when paging.
+watch(page, () => {
+	if (import.meta.client)
+		window.scrollTo({ top: 0, behavior: 'smooth' })
+})
 
 const debouncedQ = ref(q.value)
 let timer: ReturnType<typeof setTimeout>
@@ -32,16 +74,18 @@ const sortOptions = computed(() => [
 	{ label: t('sort.name'), value: 'name' },
 	{ label: t('sort.level'), value: 'level' },
 ])
-watch([debouncedQ, type, sort, dir], () => {
+watch([debouncedQ, type, cls, gender, sort, dir], () => {
 	page.value = 1
 })
 
 // reflect state in the URL (replace, so we don't spam history); omit defaults to keep it clean
-watch([q, type, sort, dir, page], () => {
+watch([q, type, cls, gender, sort, dir, page], () => {
 	router.replace({
 		query: {
 			...(q.value ? { q: q.value } : {}),
 			...(type.value !== 'all' ? { type: type.value } : {}),
+			...(cls.value !== 'all' ? { class: cls.value } : {}),
+			...(gender.value !== 'all' ? { gender: gender.value } : {}),
 			...(sort.value !== 'id' ? { sort: sort.value } : {}),
 			...(dir.value !== 'asc' ? { dir: dir.value } : {}),
 			...(page.value !== 1 ? { page: page.value } : {}),
@@ -50,97 +94,93 @@ watch([q, type, sort, dir, page], () => {
 })
 
 const { data, status } = await useFetch('/api/items', {
-	query: { q: debouncedQ, type, sort, dir, page, lang: locale },
-	// reuse already-fetched results for repeated queries instead of hitting the server again
-	getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key],
+	query: { q: debouncedQ, type, class: cls, gender, sort, dir, page, lang: locale },
+	getCachedData: cachedData,
 })
 
-// Item detail opens as a modal driven by ?v=<vnum> (shareable, back closes it). The full
-// /items/[vnum] page stays as fallback for direct links / open-in-new-tab.
-// Tooltip: always below the card, grow downward, never flip/shift up (avoidCollisions disables
-// floating-ui flip+shift entirely — see reka PopperContent middleware).
-const tooltipContent = { side: 'bottom' as const, sideOffset: 18, avoidCollisions: false }
-
-const activeVnum = computed(() => route.query.v ? Number(route.query.v) : null)
-// Keep the last opened vnum mounted through the modal's close animation (clearing it on close
-// would empty the panel mid-shrink).
-const shownVnum = ref<number | null>(activeVnum.value)
-watch(activeVnum, (v) => {
-	if (v)
-		shownVnum.value = v
-})
-const activeName = computed(() => data.value?.items?.find(i => i.vnum === shownVnum.value)?.name ?? '')
-function openItem(e: MouseEvent, vnum: number) {
-	if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0)
-		return // let new-tab/middle-click hit the page
-	e.preventDefault()
-	router.push({ query: { ...route.query, v: vnum } })
-}
-function closeItem() {
-	const { v, ...rest } = route.query
-	router.push({ query: rest })
-}
 </script>
 
 <template>
-	<UContainer class="py-8">
-		<div class="mb-6 flex items-center justify-between">
-			<div>
-				<h1 class="text-2xl font-bold text-default">
-					{{ t('items.title') }}
-				</h1>
+	<div>
+		<BackButton :to="wikiHome" :label="wikiHome === '/' ? (locale === 'ru' ? 'Главная' : 'Home') : 'Wiki'" class="mb-3" />
 
-				<p class="text-sm text-muted">
-					{{ t('items.liveCount', { count: data?.total ?? 0 }) }}
-				</p>
-			</div>
+		<div class="mb-6">
+			<h1 class="font-display text-2xl font-bold uppercase tracking-wide text-default">
+				{{ t('items.title') }}
+			</h1>
 
-			<UButton to="/" variant="ghost" icon="i-lucide-arrow-left" :label="t('common.home')" />
+			<p class="text-sm text-muted">
+				{{ t('items.liveCount', { count: data?.total ?? 0 }) }}
+			</p>
 		</div>
 
-		<div class="mb-6 flex flex-col gap-3 sm:flex-row">
-			<UInput
-				v-model="q" icon="i-lucide-search" :placeholder="t('items.search')" class="flex-1"
-				:loading="status === 'pending'"
-			/>
+		<!-- Category cards -->
+		<div class="mb-6 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-7">
+			<button
+				v-for="c in catCards" :key="c.value"
+				class="flex flex-col items-center gap-1.5 rounded-xl border p-3 text-center transition"
+				:class="type === c.value
+					? 'border-primary bg-primary/10 text-primary'
+					: 'border-default bg-default/40 text-muted hover:border-primary/40 hover:text-default'"
+				@click="type = c.value"
+			>
+				<UIcon :name="c.icon" class="size-6 shrink-0" />
 
-			<USelect v-model="type" :items="categories" class="w-full sm:w-48" />
-
-			<div class="flex gap-2">
-				<USelect v-model="sort" :items="sortOptions" icon="i-lucide-arrow-up-down" class="flex-1 sm:w-40" />
-
-				<UButton
-					color="neutral" variant="subtle"
-					:icon="dir === 'asc' ? 'i-lucide-arrow-up-narrow-wide' : 'i-lucide-arrow-down-wide-narrow'" :aria-label="dir"
-					@click="dir = dir === 'asc' ? 'desc' : 'asc'"
-				/>
-			</div>
+				<span class="text-xs font-medium leading-tight">{{ c.label }}</span>
+			</button>
 		</div>
 
-		<div v-if="data?.items?.length" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+		<div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_250px]">
+			<!-- Filters: right column, sticky on desktop, top on mobile -->
+			<aside class="lg:order-last lg:sticky lg:top-4 lg:col-start-2 lg:row-start-1 lg:self-start">
+				<div class="m2-frame flex flex-col gap-3">
+					<UInput
+						v-model="q" icon="i-lucide-search" :placeholder="t('items.search')" class="w-full"
+						:loading="status === 'pending'"
+					/>
+
+					<div class="flex gap-2">
+						<USelect v-model="sort" :items="sortOptions" icon="i-lucide-arrow-up-down" class="flex-1" />
+
+						<UButton
+							color="neutral" variant="subtle"
+							:icon="dir === 'asc' ? 'i-lucide-arrow-up-narrow-wide' : 'i-lucide-arrow-down-wide-narrow'" :aria-label="dir"
+							@click="dir = dir === 'asc' ? 'desc' : 'asc'"
+						/>
+					</div>
+
+					<div class="flex gap-2">
+						<USelect v-model="cls" :items="classOptions" icon="i-lucide-user" class="min-w-0 flex-1" />
+
+						<div class="flex shrink-0 gap-1">
+							<UButton
+								:color="gender === 'male' ? 'primary' : 'neutral'" :variant="gender === 'male' ? 'soft' : 'subtle'"
+								icon="i-lucide-mars" square :aria-label="t('gender.male')" :title="t('gender.male')"
+								@click="gender = gender === 'male' ? 'all' : 'male'"
+							/>
+
+							<UButton
+								:color="gender === 'female' ? 'primary' : 'neutral'" :variant="gender === 'female' ? 'soft' : 'subtle'"
+								icon="i-lucide-venus" square :aria-label="t('gender.female')" :title="t('gender.female')"
+								@click="gender = gender === 'female' ? 'all' : 'female'"
+							/>
+						</div>
+					</div>
+				</div>
+			</aside>
+
+			<!-- Items column -->
+			<div class="lg:col-start-1 lg:row-start-1">
+				<div v-if="data?.items?.length" class="grid grid-cols-2 gap-3 sm:grid-cols-3">
 			<NuxtLink
 				v-for="item in data.items" :key="item.vnum" :to="`/items/${item.vnum}`"
-				@click="openItem($event, item.vnum)"
 			>
 				<UCard class="cursor-pointer transition hover:ring-2 hover:ring-primary" :ui="{ body: 'p-3' }">
-					<UTooltip :delay-duration="150" :content="tooltipContent">
-						<template #content>
-							<div class="m2-board max-w-70">
-								<p class="text-sm font-semibold text-[#F2E7C1]">
-									{{ item.name }}
-								</p>
-
-								<p v-if="item.desc" class="mt-1 text-xs leading-snug text-[#d4d4d4]">
-									{{ item.desc }}
-								</p>
-							</div>
-						</template>
-
 						<div class="flex items-center gap-3">
-							<div class="flex size-14 shrink-0 items-center justify-center">
-								<NuxtImg
-									v-if="item.icon" :src="`/icons/items/${item.icon}.webp`" :alt="item.name" height="56"
-									class="max-h-full w-auto object-contain" style="image-rendering: pixelated"
+							<div class="flex size-16 shrink-0 items-center justify-center">
+								<img
+									v-if="item.icon" :src="`/icons/items/${item.icon}.webp`" :alt="item.name"
+									class="max-h-full max-w-full object-contain" style="image-rendering: pixelated"
 								/>
 
 								<UIcon v-else name="i-lucide-package" class="size-7 text-dimmed" />
@@ -160,7 +200,6 @@ function closeItem() {
 								</div>
 							</div>
 						</div>
-					</UTooltip>
 				</UCard>
 			</NuxtLink>
 		</div>
@@ -169,17 +208,10 @@ function closeItem() {
 			{{ t('items.none') }}
 		</p>
 
-		<div v-if="data && data.total > data.limit" class="mt-6 flex justify-center">
-			<UPagination v-model:page="page" :total="data.total" :items-per-page="data.limit" />
+				<div v-if="data && data.total > data.limit" class="mt-6 flex justify-center">
+					<UPagination v-model:page="page" :total="data.total" :items-per-page="data.limit" />
+				</div>
+			</div>
 		</div>
-
-		<UModal
-			:open="!!activeVnum" :title="activeName" :content="{ onInteractOutside: (e: Event) => e.preventDefault() }"
-			@update:open="(o: boolean) => { if (!o) closeItem() }"
-		>
-			<template #body>
-				<ItemDetail v-if="shownVnum" :key="shownVnum" :vnum="shownVnum" />
-			</template>
-		</UModal>
-	</UContainer>
+	</div>
 </template>

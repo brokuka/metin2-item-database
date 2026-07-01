@@ -1,6 +1,84 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
 
+/* Display face for wordmark/headings (Latin + Cyrillic). Body stays on the UI sans. */
+:root {
+	--font-display: 'Oswald', ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-display {
+	font-family: var(--font-display);
+}
+
+/* Reserve the scrollbar gutter always so navigating short <-> tall pages doesn't shift
+   the layout. reka scroll-lock (select/modal) also adds body padding to compensate for
+   a scrollbar it removes — with the gutter that double-counts, so neutralize it. */
+html {
+	scrollbar-gutter: stable;
+}
+
+body {
+	padding-right: 0 !important;
+	margin-right: 0 !important;
+}
+
+/* Page transition (fade + slight rise, out-in). */
+.page-enter-active,
+.page-leave-active {
+	transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.page-enter-from {
+	opacity: 0;
+	transform: translateY(8px);
+}
+
+.page-leave-to {
+	opacity: 0;
+	transform: translateY(-6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.page-enter-active,
+	.page-leave-active {
+		transition: none;
+	}
+
+	.page-enter-from,
+	.page-leave-to {
+		transform: none;
+	}
+}
+
+/* Standalone wiki container: centered, header/body/footer stacked. Max width matches the
+   shell's content column (1440 − 300px sidebar − gaps ≈ 1120px) so cards are the same size
+   standalone and embedded. */
+.site-wiki {
+	width: 100%;
+	max-width: 1120px;
+	margin-inline: auto;
+	min-height: 100dvh;
+	padding: 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+@media (min-width: 1024px) {
+	.site-wiki {
+		padding: 1.25rem;
+	}
+}
+
+/* Signature: the in-game ThinBoard frame on wiki panels (filters, section cards). */
+.m2-frame {
+	border: 16px solid transparent;
+	border-image: url('/ui/board.webp?v=4') 16 / 16px / 0 round;
+	background: color-mix(in oklab, var(--ui-bg) 60%, transparent);
+	background-clip: border-box;
+	backdrop-filter: blur(8px);
+}
+
 /* In-game ItemToolTip = ui.ThinBoard (uitooltip.py): 16px corner/line textures (square, with
    corner ornaments) + solid black 51% fill. Sprite built by scripts/build-board.mjs. */
 /* Nuxt UI wraps the tooltip in [data-slot=content] with a grey surface (bg-default + ring +
@@ -17,7 +95,7 @@
 
 .m2-board {
 	border: 16px solid transparent;
-	border-image: url('/ui/board.webp?v=3') 16 / 16px / 0 round;
+	border-image: url('/ui/board.webp?v=4') 16 / 16px / 0 round;
 	background: #0a0a0a;
 	background-clip: border-box;
 }

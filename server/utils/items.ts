@@ -82,6 +82,26 @@ export function itemTypeLabel(type: number, lang: Lang = 'en'): string {
 	return (lang === 'ru' ? ITEM_TYPES_RU : ITEM_TYPES_EN)[type] ?? `#${type}`
 }
 
+// Coarse drop categories (item_proto.type -> bucket) for grouping a mob's drop list.
+const CATEGORIES: { key: string, en: string, ru: string, types: number[] }[] = [
+	{ key: 'weapon', en: 'Weapons', ru: 'Оружие', types: [1] },
+	{ key: 'armor', en: 'Armor', ru: 'Броня', types: [2] },
+	{ key: 'accessory', en: 'Accessories', ru: 'Аксессуары', types: [33, 34, 28] },
+	{ key: 'stone', en: 'Stones & Souls', ru: 'Камни и духи', types: [10, 29, 30] },
+	{ key: 'consumable', en: 'Consumables', ru: 'Расходники', types: [3, 4] },
+	{ key: 'material', en: 'Materials', ru: 'Материалы', types: [5, 14, 27, 31, 32, 9] },
+	{ key: 'book', en: 'Skill Books', ru: 'Книги умений', types: [17] },
+	{ key: 'other', en: 'Other', ru: 'Прочее', types: [] },
+]
+export const CATEGORY_ORDER = CATEGORIES.map(c => c.key)
+export function itemCategory(type: number): string {
+	return CATEGORIES.find(c => c.types.includes(type))?.key ?? 'other'
+}
+export function categoryLabel(key: string, lang: Lang): string {
+	const c = CATEGORIES.find(c => c.key === key)
+	return c ? (lang === 'ru' ? c.ru : c.en) : key
+}
+
 const APPLY_EN: Record<number, string> = {
 	1: 'Max HP',
 	2: 'Max SP',
@@ -430,4 +450,20 @@ export function decodeRestrictions(antiflag: number): { classes: string[], gende
 	const noMale = !!(antiflag & 2)
 	const gender = noFemale && noMale ? 'none' : noFemale ? 'male' : noMale ? 'female' : 'both'
 	return { classes, gender }
+}
+
+// Weapon usability is decided by subtype, not antiflag (which is inconsistent in the data):
+// sword -> warrior/sura/assassin, dagger/bow -> assassin, bell/fan -> shaman. Other subtypes
+// (two-handed, arrow, mount spear) and non-weapon items fall back to antiflag.
+const WEAPON_CLASS: Record<number, string[]> = {
+	0: ['warrior', 'sura', 'assassin'], // sword
+	1: ['assassin'], // dagger
+	2: ['assassin'], // bow
+	4: ['shaman'], // bell
+	5: ['shaman'], // fan
+}
+export function itemClasses(type: number, subtype: number, antiflag: number): string[] {
+	if (type === 1 && WEAPON_CLASS[subtype])
+		return WEAPON_CLASS[subtype]
+	return decodeRestrictions(antiflag).classes
 }

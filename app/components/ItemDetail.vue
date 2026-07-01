@@ -4,21 +4,33 @@ const props = defineProps<{ vnum: number | string }>()
 const { t, locale } = useI18n()
 const toast = useToast()
 
+// No explicit key: the auto-key includes the `lang` query so switching language refetches.
 const { data: item, error } = await useFetch(() => `/api/items/${props.vnum}`, {
 	query: { lang: locale },
-	getCachedData: (key, nuxtApp) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key],
+	getCachedData: cachedData,
 })
+
+useHead({ title: () => item.value?.name || t('items.title') })
 
 const level = ref(0)
 const current = computed(() => item.value?.levels.find(l => l.level === level.value) ?? item.value?.levels[0])
 const levelItems = computed(() => item.value?.levels.map(l => ({ label: `+${l.level}`, value: l.level })) ?? [])
 const showClasses = computed(() => item.value?.isEquip && (item.value?.classes?.length ?? 0) > 0)
 
+// Non-equip items stack -> offer a quantity, defaulting to the server's max stack (ITEM_MAX_COUNT).
+const maxStack = Number(useRuntimeConfig().public.maxStack) || 200
+const stackable = computed(() => !!item.value && !item.value.isEquip)
+const qty = ref(maxStack)
+const command = computed(() => {
+	const base = current.value?.giveCommand ?? ''
+	return stackable.value ? `${base} ${qty.value}` : base
+})
+
 function copyCommand() {
-	if (!current.value)
+	if (!command.value)
 		return
-	navigator.clipboard.writeText(current.value.giveCommand)
-	toast.add({ title: t('items.copied'), description: current.value.giveCommand, color: 'success' })
+	navigator.clipboard.writeText(command.value)
+	toast.add({ title: t('items.copied'), description: command.value, color: 'success' })
 }
 function signed(v: number, percent: boolean) {
 	return `${v > 0 ? '+' : ''}${v}${percent ? '%' : ''}`
@@ -35,14 +47,13 @@ function signed(v: number, percent: boolean) {
 	<div v-else>
 		<div class="flex items-start gap-4">
 			<div class="flex size-20 shrink-0 items-center justify-center rounded-lg bg-elevated/50">
-				<NuxtImg
+				<img
 					v-if="item.icon"
 					:src="`/icons/items/${item.icon}.webp`"
 					:alt="item.name"
-					height="72"
-					class="max-h-full w-auto object-contain"
+					class="max-h-full max-w-full object-contain"
 					style="image-rendering: pixelated"
-				/>
+				>
 
 				<UIcon v-else name="i-lucide-package" class="size-10 text-dimmed" />
 			</div>
@@ -68,7 +79,7 @@ function signed(v: number, percent: boolean) {
 			</div>
 		</div>
 
-		<div class="mt-4 rounded-lg bg-elevated/40 p-3">
+		<div class="mt-4 rounded-lg bg-elevated p-3">
 			<p class="mb-1 text-xs font-semibold uppercase text-muted">
 				{{ t('items.description') }}
 			</p>
@@ -87,7 +98,9 @@ function signed(v: number, percent: boolean) {
 		</div>
 
 		<div class="mt-4 flex items-center gap-2">
-			<UInput :model-value="current.giveCommand" readonly class="flex-1 font-mono" />
+			<UInputNumber v-if="stackable" v-model="qty" :min="1" :max="maxStack" :ui="{ base: 'text-center' }" class="w-28" />
+
+			<UInput :model-value="command" readonly class="min-w-0 flex-1 font-mono" />
 
 			<UButton icon="i-lucide-copy" :label="t('items.copy')" @click="copyCommand" />
 		</div>

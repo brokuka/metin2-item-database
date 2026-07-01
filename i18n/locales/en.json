@@ -27,7 +27,7 @@
 	"items": {
 		"title": "Item database",
 		"liveCount": "Live from the server — {count} items",
-		"search": "Search by name or ID…",
+		"search": "Search by name/ID",
 		"allCategories": "All categories",
 		"none": "No items found.",
 		"backToItems": "Back to items",

@@ -3,7 +3,7 @@ import { itemProto } from '../../db/schema'
 import { resolveItemIcon } from '../../utils/icons'
 import { itemDesc } from '../../utils/itemDesc'
 import { itemName, langOf } from '../../utils/itemNames'
-import { appliesIndexed, decodeRestrictions, decodeStats, describeLimits, itemTypeLabel, parseRefine, REFINE_TYPES } from '../../utils/items'
+import { appliesIndexed, decodeRestrictions, decodeStats, describeLimits, itemClasses, itemTypeLabel, parseRefine, REFINE_TYPES } from '../../utils/items'
 
 type Row = typeof itemProto.$inferSelect
 
@@ -87,6 +87,7 @@ export default defineCachedEventHandler(async (event) => {
 		description: itemDesc(baseVnum, lang),
 		isEquip: REFINE_TYPES.has(it.type) || it.type === 28,
 		...decodeRestrictions(it.antiflag ?? 0),
+		classes: itemClasses(it.type, it.subtype ?? 0, it.antiflag ?? 0), // weapons by subtype, rest by antiflag
 		bonuses,
 		levels,
 	}

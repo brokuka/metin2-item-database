@@ -22,6 +22,19 @@ export default defineNuxtConfig({
 	// both standalone and when extended as a layer (git submodule).
 	css: [fileURLToPath(new URL('./app/assets/css/main.css', import.meta.url))],
 
+	app: {
+		pageTransition: { name: 'page', mode: 'out-in' },
+
+		head: {
+			titleTemplate: '%s · Metin2',
+			link: [
+				{ rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+				{ rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+				{ rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap' },
+			],
+		},
+	},
+
 	i18n: {
 		strategy: 'no_prefix',
 		defaultLocale: 'en',
@@ -35,6 +48,12 @@ export default defineNuxtConfig({
 	// Server-only DB config. Point these at YOUR Metin2 game DB.
 	// Override via env: NUXT_DB_HOST, NUXT_DB_PORT, NUXT_DB_USER, NUXT_DB_PASSWORD, NUXT_DB_DATABASE.
 	runtimeConfig: {
+		public: {
+			// Server's max player level (caps the exp calculator). Override: NUXT_PUBLIC_MAX_LEVEL.
+			maxLevel: 99,
+			// Server's max item stack (ITEM_MAX_COUNT). Override: NUXT_PUBLIC_MAX_STACK.
+			maxStack: 200,
+		},
 		// Absolute path to this layer's converted item icons. Resolved here (config runs
 		// in Node with a correct import.meta.url) because a cwd/bundle-relative path can't
 		// find the layer's public/ once this is consumed as a layer. Override: NUXT_ICON_DIR.

@@ -2,7 +2,7 @@ import { itemProto } from '../../db/schema'
 import { resolveItemIcon } from '../../utils/icons'
 import { itemDesc } from '../../utils/itemDesc'
 import { itemName, langOf } from '../../utils/itemNames'
-import { itemTypeLabel, parseRefine, REFINE_TYPES } from '../../utils/items'
+import { itemClasses, itemTypeLabel, parseRefine, REFINE_TYPES } from '../../utils/items'
 
 // Fetch all item rows once, cached — avoids hitting the DB on every search/filter/page request.
 const getAllRows = defineCachedFunction(
@@ -12,8 +12,10 @@ const getAllRows = defineCachedFunction(
 			vnum: itemProto.vnum,
 			type: itemProto.type,
 			localeName: itemProto.localeName,
+			subtype: itemProto.subtype,
 			limittype0: itemProto.limittype0,
 			limitvalue0: itemProto.limitvalue0,
+			antiflag: itemProto.antiflag,
 		}).from(itemProto).orderBy(itemProto.vnum)
 	},
 	{ maxAge: 60, name: 'itemProtoRows', getKey: () => 'all' },
@@ -25,6 +27,10 @@ export default defineEventHandler(async (event) => {
 	const search = String(query.q ?? '').trim().toLowerCase()
 	const typeNum = Number(query.type)
 	const type = Number.isInteger(typeNum) && typeNum > 0 ? typeNum : undefined
+	const clsRaw = String(query.class ?? '')
+	const cls = clsRaw && clsRaw !== 'all' ? clsRaw : '' // 'all'/empty = no class filter
+	// gender usability (antiflag bit set = that gender CANNOT use it): FEMALE=1, MALE=2
+	const genderBit = { male: 2, female: 1 }[String(query.gender ?? '')] ?? 0
 	const page = Math.max(1, Number(query.page) || 1)
 	const limit = Math.min(100, Math.max(1, Number(query.limit) || 48))
 	const sort = String(query.sort ?? 'id')
@@ -32,8 +38,13 @@ export default defineEventHandler(async (event) => {
 
 	const rows = await getAllRows()
 
+	// Types actually present in the data — lets the UI hide empty category cards.
+	const availableTypes = [...new Set(rows.filter(r => r.type !== 0).map(r => r.type))].sort((a, b) => a - b)
+
 	const named = rows
 		.filter(r => r.type !== 0 && (!type || r.type === type))
+		.filter(r => !cls || itemClasses(r.type, r.subtype ?? 0, r.antiflag ?? 0).includes(cls)) // usable by class
+		.filter(r => !genderBit || !((r.antiflag ?? 0) & genderBit)) // usable by gender
 		.map(r => ({ vnum: r.vnum, type: r.type, name: itemName(r.vnum, lang, r.localeName), level: r.limittype0 === 1 ? (r.limitvalue0 ?? 0) : 0 }))
 		.filter(r => r.name && r.name !== 'Noname')
 		.filter(r => !search || r.name.toLowerCase().includes(search) || String(r.vnum).includes(search))
@@ -74,5 +85,5 @@ export default defineEventHandler(async (event) => {
 		desc: itemDesc(g.vnum, lang),
 	}))
 
-	return { total: all.length, page, limit, items }
+	return { total: all.length, page, limit, items, types: availableTypes }
 })

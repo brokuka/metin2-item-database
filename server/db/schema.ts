@@ -1,4 +1,5 @@
-import { customType, int, mysqlSchema, tinyint } from 'drizzle-orm/mysql-core'
+import iconv from 'iconv-lite'
+import { customType, int, mysqlSchema, smallint, tinyint } from 'drizzle-orm/mysql-core'
 
 // item_proto names are varbinary (EUC-KR `name`, English `locale_name`). Decode Buffer -> string on read.
 const binStr = customType<{ data: string }>({
@@ -6,12 +7,27 @@ const binStr = customType<{ data: string }>({
 	fromDriver(v) { return Buffer.isBuffer(v) ? v.toString('utf8') : String(v ?? '') },
 })
 
+// mob_proto / item_proto locale_name is the server-locale name in cp1251 (this server runs RU).
+// Override the charset via NUXT_MOB_NAME_ENCODING if your server uses another locale.
+const localeStr = customType<{ data: string }>({
+	dataType() { return 'varbinary(24)' },
+	fromDriver(v) { return Buffer.isBuffer(v) ? iconv.decode(v, process.env.NUXT_MOB_NAME_ENCODING || 'win1251') : String(v ?? '') },
+})
+
+// enum/set columns come back as plain strings (sets comma-joined); read-only passthrough.
+const str = customType<{ data: string }>({
+	dataType() { return 'varchar(255)' },
+	fromDriver(v) { return v == null ? '' : String(v) },
+})
+
 // Item definitions live in the `player` DB (owned by the server). Read-only wiki source.
 export const player = mysqlSchema('player')
 export const itemProto = player.table('item_proto', {
 	vnum: int('vnum').primaryKey(),
 	name: binStr('name'),
-	localeName: binStr('locale_name'),
+	// locale_name is the server-locale name (cp1251 on this RU server), not utf8 — decode like
+	// mob names. Only shown as a fallback when the item isn't in item_names_*.txt (e.g. dragon souls).
+	localeName: localeStr('locale_name'),
 	type: tinyint('type').notNull(),
 	subtype: tinyint('subtype').notNull(),
 	weight: tinyint('weight'),
@@ -36,4 +52,37 @@ export const itemProto = player.table('item_proto', {
 	value5: int('value5'),
 	wearflag: int('wearflag'),
 	antiflag: int('antiflag'),
+})
+
+// Monsters / NPCs, also in `player` (read-only wiki source).
+export const mobProto = player.table('mob_proto', {
+	vnum: int('vnum').primaryKey(),
+	name: binStr('name'),
+	localeName: localeStr('locale_name'),
+	rank: tinyint('rank'),
+	type: tinyint('type'),
+	battleType: tinyint('battle_type'),
+	level: smallint('level'),
+	size: str('size'),
+	aiFlag: str('ai_flag'),
+	raceFlag: str('setRaceFlag'),
+	immuneFlag: str('setImmuneFlag'),
+	empire: tinyint('empire'),
+	st: smallint('st'),
+	dx: smallint('dx'),
+	ht: smallint('ht'),
+	iq: smallint('iq'),
+	damageMin: smallint('damage_min'),
+	damageMax: smallint('damage_max'),
+	maxHp: int('max_hp'),
+	goldMin: int('gold_min'),
+	goldMax: int('gold_max'),
+	exp: int('exp'),
+	def: smallint('def'),
+	attackSpeed: smallint('attack_speed'),
+	moveSpeed: smallint('move_speed'),
+	aggressiveHpPct: tinyint('aggressive_hp_pct'),
+	aggressiveSight: smallint('aggressive_sight'),
+	attackRange: smallint('attack_range'),
+	dropItem: int('drop_item'),
 })
